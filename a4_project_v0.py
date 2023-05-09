@@ -18,7 +18,7 @@ from torchvision import models, transforms
 from torch.autograd import Variable
 from torch.nn import functional as F
 from torch import topk
-from torch.tensor import flip
+#from torch.tensor import flip
 import numpy as np
 import skimage.transform
 import json
@@ -80,8 +80,9 @@ images.append(Image.open("A4/cat_1.jpg"))
 images.append(Image.open("A4/cat_car_0.jpg"))
 images.append(Image.open("A4/truck_0.jpg"))
 
+image_name = ['cat', 'car', 'truck']
 
-for image in images:
+for image_index, image in enumerate(images):
     
     # Imagenet mean/std
     
@@ -103,13 +104,14 @@ for image in images:
     tensor_original = preprocess(image)
     
     new_tensors = []
-    #new_tensors.append(tensor_original)
-    #new_tensors.append(noise(tensor_original, 'gauss'))
-    #new_tensors.append(noise(tensor_original, 'sp'))
+    new_tensors.append(tensor_original)
+    new_tensors.append(noise(tensor_original, 'gauss'))
+    new_tensors.append(noise(tensor_original, 'sp'))
     new_tensors.append(noise(tensor_original, 'flip'))
+    figures = ['original', 'gaussian noise', 'salt and peppar', 'flipped']
     
     #%
-    for tensor in new_tensors:
+    for index, tensor in enumerate(new_tensors):
         
         imshow(np.transpose(tensor.numpy(), (1, 2, 0)))
         plt.show()
@@ -134,10 +136,12 @@ for image in images:
         class_idx = topk(pred_probabilities,1)[1].int()
         overlay = getCAM(activated_features.features, weight_softmax, class_idx )
         imshow(overlay[0], alpha=0.5, cmap='jet')
+        plt.title(image_name[image_index] + ' - ' + figures[index])
         plt.show()
         
         imshow(np.transpose(tensor.numpy(), (1, 2, 0)))#display_transform(tensor))
         imshow(skimage.transform.resize(overlay[0], tensor.shape[1:3]), alpha=0.5, cmap='jet');
+        plt.title(image_name[image_index] + ' - ' + figures[index])
         plt.show()
         
         class_pred = topk(pred_probabilities,10)
@@ -148,6 +152,7 @@ for image in images:
         plt.hist(idx, weights=weights, ec='k')
         plt.grid()
         plt.xticks(rotation=45)
+        plt.title(image_name[image_index] + ' - ' + figures[index])
         plt.show()
 
 
